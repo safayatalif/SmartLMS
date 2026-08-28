@@ -1,26 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useActionState, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ScanIdModal, type ScannedId } from "@/components/ScanIdModal";
+import { signInAction, type AuthState } from "@/lib/actions/auth";
 import { useI18n } from "@/lib/i18n";
+
+const initial: AuthState = {};
 
 export default function SignInPage() {
   const { t } = useI18n();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [studentId, setStudentId] = useState("");
+  const [state, action, pending] = useActionState(signInAction, initial);
 
   function onScan(data: ScannedId) {
     setStudentId(data.studentId);
-  }
-
-  function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    router.push("/admin");
   }
 
   return (
@@ -41,26 +38,35 @@ export default function SignInPage() {
         {t.cta.scan}
       </button>
       <p className="mt-6 text-center text-xs tracking-[0.18em] uppercase text-ink-soft">{t.auth.or}</p>
-      <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
+      <form action={action} className="mt-6 flex flex-col gap-4">
         <label className="text-sm">
           {t.auth.id}
           <input
+            name="login"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine"
             placeholder="ID or email"
+            required
           />
         </label>
         <label className="text-sm">
           {t.auth.password}
           <input
+            name="password"
             type="password"
             className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine"
             placeholder="••••••••"
+            required
           />
         </label>
-        <button type="submit" className="mt-2 rounded-full bg-ink py-3 text-paper hover:bg-wine">
-          {t.auth.submitIn}
+        {state.error ? <p className="text-sm text-wine">{state.error}</p> : null}
+        <button
+          type="submit"
+          disabled={pending}
+          className="mt-2 rounded-full bg-ink py-3 text-paper hover:bg-wine disabled:opacity-60"
+        >
+          {pending ? "…" : t.auth.submitIn}
         </button>
       </form>
       <p className="mt-6 text-sm text-ink-soft">
@@ -69,7 +75,9 @@ export default function SignInPage() {
           {t.nav.signUp}
         </Link>
       </p>
-      <p className="mt-4 text-xs text-ink-soft">{t.auth.mockAdmin}</p>
+      <p className="mt-4 text-xs text-ink-soft">
+        Admin: admin@seu.edu.bd / admin123 · Student: any seeded email / student123
+      </p>
       {open ? <ScanIdModal onClose={() => setOpen(false)} onComplete={onScan} /> : null}
     </div>
   );
