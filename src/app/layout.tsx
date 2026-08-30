@@ -3,6 +3,8 @@ import { Fraunces, Noto_Sans_Bengali, Noto_Serif_Bengali, Outfit } from "next/fo
 import { Providers } from "@/components/Providers";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const outfit = Outfit({
   variable: "--font-outfit",
   subsets: ["latin"],
