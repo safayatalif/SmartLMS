@@ -2,15 +2,29 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { signOutAction } from "@/lib/actions/auth";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/cn";
+import type { SessionUser } from "@/lib/types";
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  user,
+}: {
+  children: React.ReactNode;
+  user: SessionUser;
+}) {
   const { t } = useI18n();
   const pathname = usePathname();
+  const initials = user.name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
   const items = [
     { href: "/admin", label: t.admin.overview, icon: IconGrid },
     { href: "/admin/books", label: t.admin.books, icon: IconBook },
@@ -65,15 +79,28 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="shrink-0 border-t border-paper/10 p-4">
-          <div className="flex items-center gap-3 rounded-xl bg-paper/8 px-3 py-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-xs font-medium text-forest">
-              SA
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm">Safayat Alif</p>
-              <p className="text-[11px] text-paper/50">Admin · CSE</p>
-            </div>
-          </div>
+          <ProfileMenu
+            align="up"
+            tone="dark"
+            name={user.name}
+            subtitle={`Admin${user.department ? ` · ${user.department}` : ""}`}
+            trigger={
+              <button
+                type="button"
+                className="flex w-full items-center gap-3 rounded-xl bg-paper/8 px-3 py-3 text-left transition hover:bg-paper/12"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-xs font-medium text-forest">
+                  {initials}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-sm">{user.name}</span>
+                  <span className="block text-[11px] text-paper/50">
+                    Admin{user.department ? ` · ${user.department}` : ""}
+                  </span>
+                </span>
+              </button>
+            }
+          />
           <Link href="/" className="mt-3 block px-1 text-[11px] text-paper/45 hover:text-gold">
             ← Back to SmartLMS
           </Link>
@@ -93,9 +120,21 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </label>
           <div className="ml-auto flex items-center gap-2.5">
             <LanguageToggle />
-            <div className="hidden h-9 w-9 items-center justify-center rounded-full bg-wine text-xs text-paper md:flex">
-              SA
-            </div>
+            <ProfileMenu
+              align="down"
+              tone="light"
+              name={user.name}
+              subtitle={`Admin${user.department ? ` · ${user.department}` : ""}`}
+              trigger={
+                <button
+                  type="button"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-wine text-xs text-paper ring-offset-2 hover:ring-2 hover:ring-wine/30"
+                  aria-label="Account menu"
+                >
+                  {initials}
+                </button>
+              }
+            />
           </div>
         </header>
 
@@ -126,6 +165,81 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           })}
         </ul>
       </nav>
+    </div>
+  );
+}
+
+function ProfileMenu({
+  trigger,
+  align,
+  tone,
+  name,
+  subtitle,
+}: {
+  trigger: React.ReactNode;
+  align: "up" | "down";
+  tone: "dark" | "light";
+  name: string;
+  subtitle: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onPointer(e: MouseEvent) {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointer);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointer);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <div onClick={() => setOpen((v) => !v)}>{trigger}</div>
+      {open ? (
+        <div
+          className={cn(
+            "absolute z-50 min-w-[180px] overflow-hidden rounded-xl border shadow-lg",
+            align === "up" ? "bottom-full left-0 mb-2" : "top-full right-0 mt-2",
+            tone === "dark"
+              ? "border-paper/15 bg-forest text-paper"
+              : "border-ink/10 bg-paper text-ink",
+          )}
+        >
+          <div
+            className={cn(
+              "border-b px-3 py-2.5",
+              tone === "dark" ? "border-paper/10" : "border-ink/8",
+            )}
+          >
+            <p className="truncate text-sm font-medium">{name}</p>
+            <p className={cn("text-[11px]", tone === "dark" ? "text-paper/50" : "text-ink-soft")}>
+              {subtitle}
+            </p>
+          </div>
+          <form action={signOutAction}>
+            <button
+              type="submit"
+              className={cn(
+                "block w-full px-3 py-2.5 text-left text-sm transition",
+                tone === "dark"
+                  ? "hover:bg-paper/10 hover:text-gold"
+                  : "hover:bg-paper-2 hover:text-wine",
+              )}
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+      ) : null}
     </div>
   );
 }
