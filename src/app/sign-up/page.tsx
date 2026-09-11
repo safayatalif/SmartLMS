@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { useActionState, useState } from "react";
 import { Logo } from "@/components/Logo";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { ScanIdModal, type ScannedId } from "@/components/ScanIdModal";
+import { signUpAction, type AuthState } from "@/lib/actions/auth";
 import { useI18n } from "@/lib/i18n";
+
+const initial: AuthState = {};
 
 export default function SignUpPage() {
   const { t } = useI18n();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     name: "",
@@ -19,6 +20,7 @@ export default function SignUpPage() {
     email: "",
     phone: "",
   });
+  const [state, action, pending] = useActionState(signUpAction, initial);
 
   function onScan(data: ScannedId) {
     setForm((prev) => ({
@@ -28,11 +30,6 @@ export default function SignUpPage() {
       department: data.department,
       email: data.email,
     }));
-  }
-
-  function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    router.push("/admin");
   }
 
   return (
@@ -53,22 +50,64 @@ export default function SignUpPage() {
         {t.cta.scan}
       </button>
       <p className="mt-6 text-center text-xs tracking-[0.18em] uppercase text-ink-soft">{t.auth.or}</p>
-      <form onSubmit={onSubmit} className="mt-6 grid gap-4">
-        <Field label={t.auth.name} value={form.name} onChange={(v) => setForm({ ...form, name: v })} />
-        <Field label={t.auth.id} value={form.studentId} onChange={(v) => setForm({ ...form, studentId: v })} />
-        <Field label={t.auth.dept} value={form.department} onChange={(v) => setForm({ ...form, department: v })} />
-        <Field label={t.auth.email} value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-        <Field label={t.auth.phone} value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+      <form action={action} className="mt-6 grid gap-4">
+        <Field
+          label={t.auth.name}
+          name="name"
+          value={form.name}
+          onChange={(v) => setForm({ ...form, name: v })}
+        />
+        <Field
+          label={t.auth.id}
+          name="studentId"
+          value={form.studentId}
+          onChange={(v) => setForm({ ...form, studentId: v })}
+        />
+        <Field
+          label={t.auth.dept}
+          name="department"
+          value={form.department}
+          onChange={(v) => setForm({ ...form, department: v })}
+        />
+        <Field
+          label={t.auth.email}
+          name="email"
+          value={form.email}
+          onChange={(v) => setForm({ ...form, email: v })}
+        />
+        <Field
+          label={t.auth.phone}
+          name="phone"
+          value={form.phone}
+          onChange={(v) => setForm({ ...form, phone: v })}
+        />
         <label className="text-sm">
           {t.auth.password}
-          <input type="password" className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine" />
+          <input
+            name="password"
+            type="password"
+            required
+            minLength={6}
+            className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine"
+          />
         </label>
         <label className="text-sm">
           {t.auth.confirm}
-          <input type="password" className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine" />
+          <input
+            name="confirm"
+            type="password"
+            required
+            minLength={6}
+            className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine"
+          />
         </label>
-        <button type="submit" className="mt-2 rounded-full bg-ink py-3 text-paper hover:bg-wine">
-          {t.auth.submitUp}
+        {state.error ? <p className="text-sm text-wine">{state.error}</p> : null}
+        <button
+          type="submit"
+          disabled={pending}
+          className="mt-2 rounded-full bg-ink py-3 text-paper hover:bg-wine disabled:opacity-60"
+        >
+          {pending ? "…" : t.auth.submitUp}
         </button>
       </form>
       <p className="mt-6 text-sm text-ink-soft">
@@ -84,10 +123,12 @@ export default function SignUpPage() {
 
 function Field({
   label,
+  name,
   value,
   onChange,
 }: {
   label: string;
+  name: string;
   value: string;
   onChange: (v: string) => void;
 }) {
@@ -95,6 +136,7 @@ function Field({
     <label className="text-sm">
       {label}
       <input
+        name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1 w-full rounded-xl border border-ink/15 bg-card px-4 py-3 outline-none focus:border-wine"

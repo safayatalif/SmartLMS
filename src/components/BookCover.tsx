@@ -1,5 +1,5 @@
-import type { PlanId } from "@/lib/mock-data";
 import { cn } from "@/lib/cn";
+import type { PlanId } from "@/lib/types";
 
 export function BookCover({
   title,
@@ -56,13 +56,18 @@ export function TierPill({
   tier: PlanId;
   label: string;
 }) {
-  const map = {
+  const map: Record<string, string> = {
     basic: "bg-mint text-sage",
     prime: "bg-[#f3e3c7] text-wine",
     elite: "bg-ink text-paper",
-  } as const;
+  };
   return (
-    <span className={cn("rounded-full px-2.5 py-0.5 text-[11px] tracking-wide uppercase", map[tier])}>
+    <span
+      className={cn(
+        "rounded-full px-2.5 py-0.5 text-[11px] tracking-wide uppercase",
+        map[tier] || "bg-paper-2 text-ink",
+      )}
+    >
       {label}
     </span>
   );
