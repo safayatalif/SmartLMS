@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f3eee4;
+  --paper-2: #e7decd;
+  --card: #fffbf4;
+  --ink: #1c1612;
+  --ink-soft: #5e554a;
+  --line: rgba(28, 22, 18, 0.12);
+  --wine: #7a2e3a;
+  --wine-deep: #541822;
+  --terracotta: #c45c3e;
+  --gold: #c4a35a;
+  --sage: #3e5c4a;
+  --forest: #1e3328;
+  --mint: #e4efe6;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-wine: var(--wine);
+  --color-wine-deep: var(--wine-deep);
+  --color-terracotta: var(--terracotta);
+  --color-gold: var(--gold);
+  --color-sage: var(--sage);
+  --color-forest: var(--forest);
+  --color-mint: var(--mint);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+  --font-bn: var(--font-noto-sans-bn);
+  --font-display-bn: var(--font-noto-serif-bn);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-outfit), "Noto Sans Bengali", system-ui, sans-serif;
+  min-height: 100%;
+}
+
+html[lang="bn"] body {
+  font-family: var(--font-noto-sans-bn), var(--font-outfit), sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), "Noto Serif Bengali", Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+html[lang="bn"] .font-display {
+  font-family: var(--font-noto-serif-bn), var(--font-fraunces), serif;
+}
+
+::selection {
+  background: #ead7a8;
+  color: var(--ink);
+}
+
+.gold-rule {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.page-pad {
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .page-pad {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+
+.scan-line {
+  animation: scan 2.1s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% {
+    top: 12%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    top: 82%;
+    opacity: 0;
+  }
+}
